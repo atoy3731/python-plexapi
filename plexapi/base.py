@@ -136,11 +136,17 @@ class PlexObject(object):
             raise BadRequest('ekey was not provided')
         if isinstance(ekey, int):
             ekey = '/library/metadata/%s' % ekey
-        for elem in self._server.query(ekey):
+
+        resp = self._server.query(ekey)
+
+        for elem in resp:
             if self._checkAttrs(elem, **kwargs):
-                return self._buildItem(elem, cls, ekey)
+                videoItem = self._buildItem(elem, cls, ekey)
+                videoItem.librarySectionID = resp.attrib['librarySectionID']
+                return videoItem
         clsname = cls.__name__ if cls else 'None'
         raise NotFound('Unable to find elem: cls=%s, attrs=%s' % (clsname, kwargs))
+
 
     def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
